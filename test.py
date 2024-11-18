@@ -54,7 +54,7 @@ def packet_callback(packet):
         if len(ports) > 20:  # More than 20 unique ports scanned in the time window
             print(f"Potential port scan detected from IP {ip_src} - Scanned ports: {ports.keys()}")
         
-    print(dangerous_ips)
+    
     if src_ip in dangerous_ips:
         print(f"WARNING: Dangerous IP detected: {src_ip} (Matches known dangerous IP list)")
 

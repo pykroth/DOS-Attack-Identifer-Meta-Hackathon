@@ -5,7 +5,7 @@ def getDangerousIpAddress():
     api_key = "ebb99605cb21412fce5a2d2138650f14cab69d41f67f462d0824bec93161df55bc5320f93498c736"
     
     # Base URL for AbuseIPDB Reports
-    url = "https://api.abuseipdb.com/api/v2/reports"
+    url = "https://api.abuseipdb.com/api/v2/blacklist"
     
     # Set up headers with your API key
     headers = {
@@ -28,7 +28,7 @@ def getDangerousIpAddress():
     if response.status_code == 200:
         try:
             data = response.json()  # Attempt to parse the response as JSON
-            print(data)
+
             # Check if 'data' exists and is a list of reports
             if 'data' in data and isinstance(data['data'], list):
                 # Extract the IP addresses from the response data
