@@ -1,10 +1,11 @@
 from scapy.all import sniff, IP, TCP
 from collections import defaultdict
 import time
-
+from api_test import getDangerousIpAddress
 # Dictionary to store packet counts by IP address
 packet_count = defaultdict(int)
 syn_count = defaultdict(int)
+
 
 # Define a threshold for identifying a potential DDoS attack
 PACKET_THRESHOLD = 100  # packets from a single IP in a short period
@@ -13,7 +14,7 @@ TIME_WINDOW = 10  # in seconds
 
 # Time tracking for detecting spikes
 start_time = time.time()
-
+dangerous_ips = getDangerousIpAddress() 
 # Dictionary to store port scan attempts
 port_scan_data = defaultdict(lambda: defaultdict(int))
 
@@ -31,7 +32,7 @@ def packet_callback(packet):
     # Only analyze IP packets
     if packet.haslayer(IP):
         src_ip = packet[IP].src
-        
+       # print(src_ip)
         # Count packets by source IP
         packet_count[src_ip] += 1
         
@@ -43,8 +44,6 @@ def packet_callback(packet):
     # Check for potential DDoS based on thresholds
     if packet_count[src_ip] > PACKET_THRESHOLD:
         print(f"High chance of DDoS detected from {src_ip}: {packet_count[src_ip]} packets in {TIME_WINDOW} seconds.")
-    else:
-        print('hi')
     if syn_count[src_ip] > SYN_THRESHOLD:
         print(f"High chance of SYN flood DDoS detected from {src_ip}: {syn_count[src_ip]} SYN packets in {TIME_WINDOW} seconds.")
 
@@ -54,7 +53,10 @@ def packet_callback(packet):
     for ip_src, ports in port_scan_data.items():
         if len(ports) > 20:  # More than 20 unique ports scanned in the time window
             print(f"Potential port scan detected from IP {ip_src} - Scanned ports: {ports.keys()}")
-
+        
+    print(dangerous_ips)
+    if src_ip in dangerous_ips:
+        print(f"WARNING: Dangerous IP detected: {src_ip} (Matches known dangerous IP list)")
 
 def port_sniff(packet):
     if packet.haslayer("IP") and packet.haslayer('TCP'):
