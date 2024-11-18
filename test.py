@@ -14,6 +14,8 @@ TIME_WINDOW = 10  # in seconds
 # Time tracking for detecting spikes
 start_time = time.time()
 
+port_scan_data = defaultdict(lambda: defaultdict(int))
+
 def packet_callback(packet):
     global start_time
     
@@ -44,6 +46,26 @@ def packet_callback(packet):
         print('hi')
     if syn_count[src_ip] > SYN_THRESHOLD:
         print(f"High chance of SYN flood DDoS detected from {src_ip}: {syn_count[src_ip]} SYN packets in {TIME_WINDOW} seconds.")
+
+    #PORT SNIFFING
+    port_sniff(packet)
+    
+    for ip_src, ports in port_scan_data.items():
+        if len(ports) > 20:  # More than 20 unique ports scanned in the time window
+            print(f"Potential port scan detected from IP {ip_src} - Scanned ports: {ports.keys()}")
+
+
+def port_sniff(packet):
+    if packet.haslayer("IP"):
+        ip_src = packet["IP"].src
+        ip_dst = packet["IP"].dst
+
+        sport = packet['TCP'].sport
+        dport = packet['TCP'].dport
+
+        timestamp = time.time()
+        port_scan_data[ip_src][dport] += 1
+
 
 # Start sniffing packets
 print("Starting packet capture... Press Ctrl+C to stop.")
