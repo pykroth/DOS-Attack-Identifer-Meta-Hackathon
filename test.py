@@ -2,6 +2,8 @@ from scapy.all import sniff, IP, TCP
 from collections import defaultdict
 import time
 from api_test import getDangerousIpAddress
+import subprocess
+
 # Dictionary to store packet counts by IP address
 packet_count = defaultdict(int)
 syn_count = defaultdict(int)
@@ -57,6 +59,18 @@ def packet_callback(packet):
     print(dangerous_ips)
     if src_ip in dangerous_ips:
         print(f"WARNING: Dangerous IP detected: {src_ip} (Matches known dangerous IP list)")
+
+def block_ip(ip_address):
+    try:
+        # Add a rule to block the IP address using netsh
+        subprocess.run(['netsh', 'advfirewall', 'firewall', 'add', 'rule', 
+                        'name="Block IP"', 'dir=in', 'action=block', 
+                        'protocol=any', 'remoteip=' + ip_address], check=True)
+        print(f"Blocked IP address: {ip_address}")
+    except subprocess.CalledProcessError as e:
+        print(f"Error blocking IP address: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
 
 def port_sniff(packet):
     if packet.haslayer("IP") and packet.haslayer('TCP'):
