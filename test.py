@@ -14,6 +14,7 @@ TIME_WINDOW = 10  # in seconds
 # Time tracking for detecting spikes
 start_time = time.time()
 
+# Dictionary to store port scan attempts
 port_scan_data = defaultdict(lambda: defaultdict(int))
 
 def packet_callback(packet):
@@ -56,7 +57,7 @@ def packet_callback(packet):
 
 
 def port_sniff(packet):
-    if packet.haslayer("IP"):
+    if packet.haslayer("IP") and packet.haslayer('TCP'):
         ip_src = packet["IP"].src
         ip_dst = packet["IP"].dst
 
